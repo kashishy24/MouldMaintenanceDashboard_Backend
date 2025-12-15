@@ -8,12 +8,11 @@ router.get("/SparePartCategoryName", async (req, res) => {
     const pool = await sql.connect();
     const query = `
       SELECT 
-        SparePartCategoryID,
-        SparePartCategoryName,
+        SparePartCategory,
         LastUpdatedTime,
         LastUpdatedBy
       FROM [PPMS_LILBawal].[dbo].[Config_SparePartCategory]
-      ORDER BY SparePartCategoryID ASC
+      ORDER BY SparePartCategory ASC
     `;
 
     const result = await pool.request().query(query);
@@ -38,26 +37,40 @@ router.get("/SparePartName", async (req, res) => {
   try {
     const pool = await sql.connect();
     const query = `
-      SELECT  [SparePartID]
-      ,[SparePartName]
-      ,[SparePartDescription]
-      ,[SparePartCategoryID]
-      ,[MouldGroupID]
-      ,[MouldName]
-      ,[NoOfMould]
-      ,[SparePartSize]
-      ,[SparePartLoc]
-      ,[MinQuantity]
-      ,[MaxQuantity]
-      ,[ReorderLevel]
-      ,[SparePartMake]
-      ,[LeadTime]
-      ,[ImportExport]
-      ,[PackingQuantity]
-      ,[PreferredSparePart]
-      ,[LastUpdatedTime]
-      ,[LastUpdatedBy]
-  FROM [PPMS_LILBawal].[dbo].[Config_Mould_SparePart] ASC
+      SELECT
+    SP.SparePartID,
+    SP.SparePartName,
+    SP.SparePartDescription,
+
+    CAT.SparePartCategory        AS SparePartCategoryID,
+    M.MouldName,
+
+    MON.NumberOfMould            AS NoOfMould,
+
+    SP.SparePartSize,
+    M.MouldStorageLoc            AS SparePartLoc,
+
+    SP.MinQuantity,
+    SP.MaxQuantity,
+    SP.ReorderLevel,
+
+    SP.SparePartMake,
+    SP.LeadTime,
+    SP.ImportExport,
+    SP.PackingQuantity,
+    SP.PreferredSparePart,
+
+    SP.LastUpdatedTime,
+    SP.LastUpdatedBy
+FROM dbo.Config_Mould_SparePart SP
+LEFT JOIN dbo.Config_SparePartCategory CAT
+    ON SP.SparePartID = CAT.SparePartID
+LEFT JOIN dbo.Config_Mould M
+    ON CAT.MouldID = M.MouldID
+LEFT JOIN dbo.Mould_SparePartMonitoring MON
+    ON SP.SparePartID = MON.SparePartID
+ORDER BY SP.SparePartName ASC;
+
     `;
 
     const result = await pool.request().query(query);
@@ -82,40 +95,35 @@ router.get("/SparePartName", async (req, res) => {
 // GET Spare Part Consumption By Category (Custom Date)
 router.get("/DashboardSpareConsumptionByCategory", async (req, res) => {
   try {
-    const { startDate, endDate, sparePartCategoryID } = req.query;
+    const { startDate, endDate, SparePartCategory } = req.query;
 
-    // ----------- VALIDATION -----------
-    if (!startDate || !endDate || !sparePartCategoryID) {
+    if (!startDate || !endDate || !SparePartCategory) {
       return res.status(400).json({
         success: false,
-        message: "startDate, endDate, and sparePartCategoryID are required",
+        message: "startDate, endDate, and SparePartCategory are required",
       });
     }
 
     const pool = await sql.connect();
     const request = pool.request();
 
-    // ----------- INPUT PARAMETERS -----------
+    // ✅ CORRECT PARAM NAMES (NO SPACE)
     request.input("StartDate", sql.Date, startDate);
     request.input("EndDate", sql.Date, endDate);
-    request.input("SparePartCategoryID", sql.Int, sparePartCategoryID);
+    request.input("SparePartCategory", sql.NVarChar(100), SparePartCategory);
 
-    // ----------- EXECUTE STORED PROCEDURE -----------
     const result = await request.execute(
       "DASHBOARD_SparePartConsumptionByCategoryCustomedate"
     );
 
-    return res.json({
+    res.json({
       success: true,
       data: result.recordset,
     });
   } catch (error) {
-    console.error(
-      "Error fetching DASHBOARD_SparePartConsumptionByCategoryCustomedate:",
-      error.message
-    );
+    console.error("Error fetching Spare Part Consumption:", error.message);
 
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       message: "Error fetching Spare Part Consumption (Category-wise)",
       error: error.message,
@@ -123,48 +131,45 @@ router.get("/DashboardSpareConsumptionByCategory", async (req, res) => {
   }
 });
 
+
 // GET Top 50 Spare Part Consumption (Custom Date Range)
 router.get("/DashboardTop50SpareConsumption", async (req, res) => {
   try {
-    const { startDate, endDate, sparePartCategoryID } = req.query;
+    const { startDate, endDate, SparePartCategory } = req.query;
 
-    // ------------------ Validation ------------------
-    if (!startDate || !endDate || !sparePartCategoryID) {
+    if (!startDate || !endDate || !SparePartCategory) {
       return res.status(400).json({
         success: false,
-        message: "startDate, endDate, and sparePartCategoryID are required",
+        message: "startDate, endDate, and SparePartCategory are required",
       });
     }
 
     const pool = await sql.connect();
     const request = pool.request();
 
-    // ------------------ Input Parameters ------------------
+    // ✅ MATCH SP PARAM NAME
     request.input("StartDate", sql.Date, startDate);
     request.input("EndDate", sql.Date, endDate);
-    request.input("SparePartCategoryID", sql.Int, sparePartCategoryID);
+    request.input("SparePartCategory", sql.NVarChar(100), SparePartCategory);
 
-    // ------------------ Execute Stored Procedure ------------------
     const result = await request.execute(
       "DASHBOARD_Top50SparePartConsumptionCustomDate"
     );
 
-    return res.json({
+    res.json({
       success: true,
       data: result.recordset,
     });
   } catch (error) {
-    console.error(
-      "Error fetching Top 50 Spare Part Consumption:",
-      error.message
-    );
+    console.error("Error fetching Top 50 Spare Part Consumption:", error.message);
 
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       message: "Error fetching Top 50 Spare Part Consumption",
       error: error.message,
     });
   }
 });
+
 
 module.exports = router; 
