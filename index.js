@@ -12,6 +12,8 @@ const pmStatusRoute=require("./src/Controllers/PM Status/PMStatus.js")
 const hcStatusRoute=require("./src/Controllers/HCStatus/HCStatus.js")
 const MouldSummary=require("./src/Controllers/Mould Summary/MouldSummary.js")
 const ParameterRoute=require("./src/Controllers/Parameter/Parameter.js")
+const PMCheckpointDetails=require("./src/Controllers/MouldMaintenanceHistory/PMCheckpoint.js")
+const HCCheckpointDetails=require("./src/Controllers/MouldMaintenanceHistory/HCCheckpoint.js")
 
 const app = express();
 
@@ -40,6 +42,9 @@ app.use("/api/PMStatus",pmStatusRoute );
 app.use("/api/HCStatus",hcStatusRoute );
 app.use("/api/MouldSummary",MouldSummary );
 app.use("/api/MachineParameter",ParameterRoute );
+//New 
+app.use("/api/MouldMaintenanceHistoryPM/PMCheckpointDetails",PMCheckpointDetails );
+app.use("/api/MouldMaintenanceHistoryPM/HCCheckpointDetails",HCCheckpointDetails );
 
 const PORT = process.env.PORT || 3004;
 app.listen(PORT, () => {
