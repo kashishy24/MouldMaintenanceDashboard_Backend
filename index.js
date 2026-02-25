@@ -44,7 +44,7 @@ app.use("/api/MouldSummary",MouldSummary );
 app.use("/api/MachineParameter",ParameterRoute );
 //New 
 app.use("/api/MouldMaintenanceHistoryPM/PMCheckpointDetails",PMCheckpointDetails );
-app.use("/api/MouldMaintenanceHistoryPM/HCCheckpointDetails",HCCheckpointDetails );
+app.use("/api/MouldMaintenanceHistoryHC/HCCheckpointDetails",HCCheckpointDetails );
 
 const PORT = process.env.PORT || 3004;
 app.listen(PORT, () => {
