@@ -4,12 +4,12 @@ const router = express.Router();
 
 router.get("/HcHeaderDetails", async (req, res) => {
   try {
-    const { checkListID, instance } = req.query;
+    const { checkListID, instance, mouldID } = req.query;
 
-    if (!checkListID || !instance) {
+    if (!checkListID || !instance || !mouldID) {
       return res.status(400).json({
         success: false,
-        message: "checkListID and instance are required",
+        message: "checkListID ,mould and instance are required",
       });
     }
 
@@ -18,6 +18,7 @@ router.get("/HcHeaderDetails", async (req, res) => {
 
     request.input("CheckListID", sql.Int, parseInt(checkListID));
     request.input("Instance", sql.Int, parseInt(instance));
+ request.input("MouldID", sql.Int, parseInt(mouldID));
 
     const result = await request.execute(
       "HC_Dashboard_HeaderDetails_HCCheckpointReport"

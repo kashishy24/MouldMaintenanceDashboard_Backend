@@ -6,12 +6,12 @@ const router = express.Router();
 // PM Header details 
 router.get("/PmHeaderDetails", async (req, res) => {
   try {
-    const { checkListID, instance } = req.query;
+    const { checkListID, instance, mouldID } = req.query;
 
-    if (!checkListID || !instance) {
+    if (!checkListID || !instance || !mouldID) {
       return res.status(400).json({
         success: false,
-        message: "checkListID and instance are required",
+        message: "checkListID ,mould and instance are required",
       });
     }
 
@@ -20,6 +20,7 @@ router.get("/PmHeaderDetails", async (req, res) => {
 
     request.input("CheckListID", sql.Int, parseInt(checkListID));
     request.input("Instance", sql.Int, parseInt(instance));
+    request.input("MouldID", sql.Int, parseInt(mouldID));
 
     const result = await request.execute(
       "PM_Dashboard_HeaderDetails_PMCheckpointReport"
