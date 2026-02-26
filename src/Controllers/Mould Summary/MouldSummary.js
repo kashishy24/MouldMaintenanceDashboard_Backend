@@ -295,7 +295,129 @@ router.get("/Dashboard_GetTop10SpareParts_ByMould", async (req, res) => {
   }
 });
 
+// API to get all machine Production History of mould
+// Get Machine Wise Shot Count By Mould
+router.get("/Dashboard_GET_MachineWiseShotCount_ByMould", async (req, res) => {
+  try {
+    const { mouldName } = req.query;
 
+    if (!mouldName) {
+      return res.status(400).json({
+        success: false,
+        message: "mouldName query parameter is required",
+      });
+    }
 
+    const pool = await sql.connect();
+    const request = pool.request();
+
+    request.input("MouldName", sql.NVarChar(200), mouldName);
+
+    const result = await request.execute(
+      "Dashboard_GET_MachineWiseShotCount_ByMould"
+    );
+
+    return res.json({
+      success: true,
+      data: result.recordset,   // full array for chart
+    });
+
+  } catch (error) {
+    console.error(
+      "Error fetching Dashboard_GET_MachineWiseShotCount_ByMould:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: "Error fetching Machine Wise Shot Count",
+      error: error.message,
+    });
+  }
+});
+
+// Get Machines By Mould Name
+router.get("/Dashboard_GET_Machines_ByMouldName", async (req, res) => {
+  try {
+    const { mouldName } = req.query;
+
+    // Validate query parameter
+    if (!mouldName) {
+      return res.status(400).json({
+        success: false,
+        message: "mouldName query parameter is required",
+      });
+    }
+
+    const pool = await sql.connect();
+    const request = pool.request();
+
+    // Pass parameter to stored procedure
+    request.input("MouldName", sql.NVarChar(200), mouldName);
+
+    const result = await request.execute(
+      "Dashboard_GET_Machines_ByMouldName"
+    );
+
+    return res.json({
+      success: true,
+      data: result.recordset,   // returning full array
+    });
+
+  } catch (error) {
+    console.error(
+      "Error fetching Dashboard_GET_Machines_ByMouldName:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: "Error fetching machines by mould name",
+      error: error.message,
+    });
+  }
+});
+
+// Get Machine Mould Production Details
+router.get("/Dashboard_GET_MachineMouldProductionDetails", async (req, res) => {
+  try {
+    const { equipmentName } = req.query;
+
+    // Validate query parameter
+    if (!equipmentName) {
+      return res.status(400).json({
+        success: false,
+        message: "equipmentName query parameter is required",
+      });
+    }
+
+    const pool = await sql.connect();
+    const request = pool.request();
+
+    // Pass parameter to stored procedure
+    request.input("EquipmentName", sql.NVarChar(200), equipmentName);
+
+    const result = await request.execute(
+      "Dashboard_GET_MachineMouldProductionDetails"
+    );
+
+    return res.json({
+      success: true,
+      data: result.recordset,   // return full array
+    });
+
+  } catch (error) {
+    console.error(
+      "Error fetching Dashboard_GET_MachineMouldProductionDetails:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: "Error fetching machine mould production details",
+      error: error.message,
+    });
+  }
+});
 
 module.exports = router; 
