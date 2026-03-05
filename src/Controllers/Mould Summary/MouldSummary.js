@@ -379,11 +379,59 @@ router.get("/Dashboard_GET_Machines_ByMouldName", async (req, res) => {
 });
 
 // Get Machine Mould Production Details
+// router.get("/Dashboard_GET_MachineMouldProductionDetails", async (req, res) => {
+//   try {
+//     const { equipmentName } = req.query;
+
+//     // Validate query parameter
+//     if (!equipmentName) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "equipmentName query parameter is required",
+//       });
+//     }
+
+//     const pool = await sql.connect();
+//     const request = pool.request();
+
+//     // Pass parameter to stored procedure
+//     request.input("EquipmentName", sql.NVarChar(200), equipmentName);
+
+//     const result = await request.execute(
+//       "Dashboard_GET_MachineMouldProductionDetails"
+//     );
+
+//     return res.json({
+//       success: true,
+//       data: result.recordset,   // return full array
+//     });
+
+//   } catch (error) {
+//     console.error(
+//       "Error fetching Dashboard_GET_MachineMouldProductionDetails:",
+//       error
+//     );
+
+//     return res.status(500).json({
+//       success: false,
+//       message: "Error fetching machine mould production details",
+//       error: error.message,
+//     });
+//   }
+// });
+
 router.get("/Dashboard_GET_MachineMouldProductionDetails", async (req, res) => {
   try {
-    const { equipmentName } = req.query;
+    const { mouldID, equipmentName } = req.query;
 
-    // Validate query parameter
+    // Validate query parameters
+    if (!mouldID) {
+      return res.status(400).json({
+        success: false,
+        message: "mouldID query parameter is required",
+      });
+    }
+
     if (!equipmentName) {
       return res.status(400).json({
         success: false,
@@ -394,21 +442,34 @@ router.get("/Dashboard_GET_MachineMouldProductionDetails", async (req, res) => {
     const pool = await sql.connect();
     const request = pool.request();
 
-    // Pass parameter to stored procedure
+    // Pass parameters to stored procedure
+    request.input("MouldID", sql.NVarChar(100), mouldID);
     request.input("EquipmentName", sql.NVarChar(200), equipmentName);
 
     const result = await request.execute(
-      "Dashboard_GET_MachineMouldProductionDetails"
+      "Dashboard_GET_MachineMouldProductionDetails_1"
     );
+
+    // Handle SP validation response (Status = 0)
+    if (
+      result.recordset &&
+      result.recordset.length > 0 &&
+      result.recordset[0].Status === 0
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: result.recordset[0].Message,
+      });
+    }
 
     return res.json({
       success: true,
-      data: result.recordset,   // return full array
+      data: result.recordset,
     });
 
   } catch (error) {
     console.error(
-      "Error fetching Dashboard_GET_MachineMouldProductionDetails:",
+      "Error fetching Dashboard_GET_MachineMouldProductionDetails_1:",
       error
     );
 
@@ -419,5 +480,4 @@ router.get("/Dashboard_GET_MachineMouldProductionDetails", async (req, res) => {
     });
   }
 });
-
 module.exports = router; 
